@@ -1,4 +1,5 @@
 FROM archlinux/base
+
 MAINTAINER Marco Guerri
 
 RUN useradd -m gpg
@@ -26,7 +27,19 @@ RUN pacman -Syu --noconfirm \
 	wget \
 	tar \
 	pkcs11-helper \
-	sudo
+	sudo \
+	pkgconfig \
+	autoconf-archive \
+	tpm2-tss \
+	libyaml \
+	tpm2-tools \
+	python3 \
+	python-yaml \
+	python-cryptography \
+	python-pyasn1-modules \
+	p11-kit \
+	pkcs11-helper \
+	libp11
 
 USER gpg
 
@@ -36,4 +49,12 @@ RUN cd $HOME && \
 	git clone https://aur.archlinux.org/gnupg-pkcs11-scd.git && \
 	cd gnupg-pkcs11-scd && \
 	makepkg -i --skippgpcheck --noconfirm
+
+RUN cd $HOME && \
+	git clone https://github.com/tpm2-software/tpm2-pkcs11.git \
+		--depth 1 \
+		--branch 1.4.0
+
+COPY --chown=gpg:gpg config/gnupg-pkcs11-scd.conf /home/gpg/.gnupg
+COPY --chown=gpg:gpg config/gpg-agent.conf /home/gpg/.gnupg
  
