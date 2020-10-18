@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo chown gpg:gpg /dev/tpm0
+sudo chown gpg:gpg /dev/tpmrm0
+exec /bin/bash

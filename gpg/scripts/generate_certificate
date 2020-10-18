@@ -1,0 +1,35 @@
+#!/bin/bash
+
+set -eu
+
+error() {
+	echo "$@"
+	exit 1
+}
+
+cleanup() {
+	rm -f crs.pem
+}
+
+trap cleanup EXIT
+
+[[ $# -le 1 ]] && error "Usage: ${0} <pkcs11_token_url>" && exit 1
+
+token_url="${1}"
+
+OPENSSL_CONF=/home/gpg/openssl.conf  \
+	openssl req \
+		-engine pkcs11 \
+		-new -key ${token_url}  \
+		-keyform engine \
+		-out csr.pem \
+		-text -x509 \
+		-subj /CN=tpm2pkcs11
+
+OPENSSL_CONF=/home/gpg/openssl.conf
+	openssl x509 \
+		-engine pkcs11 \
+		-signkey ${token_url}  \
+		-keyform engine \
+		-in csr.pem \
+		-out cert.pem
