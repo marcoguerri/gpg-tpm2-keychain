@@ -42,7 +42,8 @@ RUN pacman -Syu --noconfirm \
         libp11 \
         tpm2-tss-engine \
         opensc \
-	vim
+	vim \
+	patch
 
 USER gpg
 
@@ -63,6 +64,14 @@ RUN cd $HOME/tpm2-pkcs11 && \
                 ./configure && \
                 make && \
                 sudo make install
+
+RUN wget "https://gnupg.org/ftp/gcrypt/gnupg/gnupg-2.2.23.tar.bz2" -O $HOME/gnupg-2.2.23.tar.bz2 && \
+	cd $HOME && \
+        tar xvf gnupg-2.2.23.tar.bz2
+
+COPY --chown=gpg:gpg files/0001_agent.patch /home/gpg/gnupg-2.2.23
+
+RUN cd $HOME/gnupg-2.2.23 && patch -p0 < 0001_agent.patch && ./configure && make && sudo make install
 
 COPY --chown=gpg:gpg config/gnupg-pkcs11-scd.conf /home/gpg/.gnupg
 COPY --chown=gpg:gpg config/gpg-agent.conf /home/gpg/.gnupg

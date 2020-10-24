@@ -1,0 +1,10 @@
+--- g10/call-agent.c	2020-08-23 12:28:56.000000000 +0200
++++ g10/call-agent.c	2020-10-18 11:23:44.798262481 +0200
+@@ -2279,6 +2279,7 @@
+                            put_membuf_cb, &data,
+                            inq_ciphertext_cb, &parm,
+                            padding_info_cb, r_padding);
++    *r_padding = -1;
+     xfree (parm.ciphertext);
+   }
+   if (err)
