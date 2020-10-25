@@ -43,11 +43,19 @@ RUN pacman -Syu --noconfirm \
         tpm2-tss-engine \
         opensc \
 	vim \
-	patch
+	patch \
+	pinentry \
+	pass
 
 USER gpg
 
-RUN mkdir $HOME/.gnupg
+RUN mkdir $HOME/keys
+
+RUN mkdir $HOME/keys/gnupg
+RUN chmod 600 $HOME/keys/gnupg
+RUN ln -s $HOME/keys/gnupg $HOME/.gnupg
+
+RUN mkdir $HOME/config
 
 RUN cd $HOME && \
         git clone https://aur.archlinux.org/gnupg-pkcs11-scd.git && \
@@ -73,10 +81,14 @@ COPY --chown=gpg:gpg files/0001_agent.patch /home/gpg/gnupg-2.2.23
 
 RUN cd $HOME/gnupg-2.2.23 && patch -p0 < 0001_agent.patch && ./configure && make && sudo make install
 
-COPY --chown=gpg:gpg config/gnupg-pkcs11-scd.conf /home/gpg/.gnupg
-COPY --chown=gpg:gpg config/gpg-agent.conf /home/gpg/.gnupg
+COPY --chown=gpg:gpg config/gnupg-pkcs11-scd.conf /home/gpg/config
+COPY --chown=gpg:gpg config/gpg-agent.conf /home/gpg/config
 COPY --chown=gpg:gpg config/openssl.conf /home/gpg
 COPY --chown=gpg:gpg scripts/init  /usr/sbin/init
 COPY --chown=gpg:gpg scripts/generate_certificate  /home/gpg/scripts/generate_certificate
+
 RUN chmod a+x /usr/sbin/init
-RUN chmod a+x /home/gpg/scripts/generate_certificate
+RUN chmod a+x  $HOME/scripts/generate_certificate
+RUN ln -s $HOME/keys $HOME/.tpm2_pkcs11
+RUN ln -s /home/gpg/keys/keychain/ ~/.password-store
+RUN sudo ln -s /usr/bin/pinentry /usr/local/bin/pinentry
