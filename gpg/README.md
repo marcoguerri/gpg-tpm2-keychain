@@ -89,7 +89,8 @@ gpg --keyid-format LONG  --list-keys
 # Migrate key
 
 Create parent object that will be used to wrap/transfer the key. Load it an get the public portion.
-````
+
+```
 tpm2_createprimary -C o -g sha256 -G rsa -c primary.ctx
 tpm2_readpublic -c primary.ctx -o new_parent.pub
 ```
