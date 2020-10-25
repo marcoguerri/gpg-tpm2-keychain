@@ -90,5 +90,4 @@ COPY --chown=gpg:gpg scripts/generate_certificate  /home/gpg/scripts/generate_ce
 RUN chmod a+x /usr/sbin/init
 RUN chmod a+x  $HOME/scripts/generate_certificate
 RUN ln -s $HOME/keys $HOME/.tpm2_pkcs11
-RUN ln -s /home/gpg/keys/keychain/ ~/.password-store
 RUN sudo ln -s /usr/bin/pinentry /usr/local/bin/pinentry

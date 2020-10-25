@@ -6,4 +6,7 @@ sudo chown gpg:gpg /dev/tpmrm0
 ln -s /home/gpg/config/gnupg-pkcs11-scd.conf /home/gpg/keys/gnupg/gnupg-pkcs11-scd.conf 2> /dev/null
 ln -s /home/gpg/config/gpg-agent.conf /home/gpg/keys/gnupg/gpg-agent.conf 2> /dev/null
 chmod 700 /home/gpg/keys/gnupg
+
+install -d /home/gpg/keys/keychain
+ln -s /home/gpg/keys/keychain/ ~/.password-store
 exec /bin/bash
