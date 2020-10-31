@@ -1,12 +1,20 @@
-Docker setup to run gnupg-pkcs11-scd and tpm2_pkcs11 backend to store gpg keys into TPM.
-Documentation is still work in process. Raw instructions below.
+Docker setup which provides an environment for [pass](https://www.passwordstore.org/) password manager, backed
+by [gnupg-pkcs11-scd](https://github.com/alonbl/gnupg-pkcs11-scd) and [tpm2_pkcs11](https://github.com/tpm2-software/tpm2-pkcs11) backend to store gpg keys into TPM.
+Documentation is still work in progress. Raw instructions below.
 
-# Initialize keys backed by TPM
+WARNING: This is a relatively complex setup with lots of links in the chain, Complexity is the enemy of security. I cannot guarantee the absence of bugs or configuration mistakes that would void the security of the whole approach. Therefore, use at your own risk.
 
+# Auth model
+
+A summary of the auth model, extracted from [tpm2-pkcs11 repo](https://github.com/tpm2-software/tpm2-pkcs11/blob/master/docs/ARCHITECTURE.md): all `tpm2_pkcs11` objects are stored under a peristent primary key in the owner hierarchy. `tpm2_pkcs11` library borrows several concepts that are smartcard specific. A `slot` is the physical smart card reader slot. For each slot, there could be one or more smartcards, each of which is associated with a token. A token maintains 2 objects under the primary key: one for the `SO` user, and the other for the `USER` user. The auth value for these objects is the `SO` or `USER` pin. The auth value is used to unseal an aes256 wrapping key, which in turn is used to encrypt all auth values for the objects in the token (keys and certificates that the token exposes for cryptographic operations). In this setup, the token is associated to a pre-existing transient TPM key stored outside of the TPM (in turn wrapped into a primary key in the owner hierarchy). This to allow for easy migration of this key to a different TPM to give access to the same gpg-backed keychain on a different machine.
+
+The instructions below explain how to setup `tpm2_pkcs11` store and migrate the token key to a different TPM.
+
+# Store initialization
 
 The pkcs11 store needs to be initialized with a token.
 
-We'll initialize the store to use a transient external TPM object
+We'll initialize the store so the token will be associated to a transient external TPM object.
 
 ```
 /home/gpg/tpm2-pkcs11/tools/tpm2_ptool.py init --transient-parent tpm2-tools-default --path /home/gpg/keys | grep id | cut -d' ' -f 2-2
