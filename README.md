@@ -179,7 +179,7 @@ Now the gpg key should be usable also on TPM `B`.
 
 
 # Bugs
-I encountered several issues while decrypting a gpg message with the TPM backed key. gpg would fail to parse the key metadata.
-This because the agent would return that padding had been removed, while it was not the case. `files/0001_agent.patch` addresses
-this problem and metadata can be parsed correctly. I the time of writing I haven't yet reported this upstream and asked for
-clarification.
+When decrypting a gpg message with the TPM backed key. gpg fails to extract the DEK from the corresponding frame, complaining that cipher algorithm is unknown in `get_it` in `pubkey-enc.c`. This happens because gpg-agent returns that random bytes padding at the begining of the frame has been removed (i.e. `padding = 0`), while this is not the case and DEK frame parsing picks up a random
+byte as the `A` field (cipher algorithm). Patch `files/0001_agent.patch` fixes this by hard setting padding to `-1`, which
+seems to be the value held by `padding` when using any other non-TPM backed key. As the time of writing, I haven't yet engaged
+with upstream community to report the bug so the rogue patch is still part of this repo.
