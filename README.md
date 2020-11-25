@@ -64,7 +64,7 @@ tpm2_create -C primary.ctx -u gpg.pub -r gpg.priv -a "sensitivedataorigin|userwi
 
 If we wanted to generate the key as persistent object inside the TPM, via `tpm2_ptool.py` itself, we would need to use the following command:
 ```
-sudo  /home/gpg/tpm2-pkcs11/tools/tpm2_ptool.py addkey \
+/home/gpg/tpm2-pkcs11/tools/tpm2_ptool.py addkey \
     --algorithm=rsa2048 \
     --label=t_gpg \
     --key-label=gpg_key_1  \
