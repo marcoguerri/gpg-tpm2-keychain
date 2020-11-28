@@ -1,6 +1,5 @@
-Docker setup which provides an environment for [pass](https://www.passwordstore.org/) password manager, backed
+Docker environment for [pass](https://www.passwordstore.org/) password manager, backed
 by [gnupg-pkcs11-scd](https://github.com/alonbl/gnupg-pkcs11-scd) and [tpm2_pkcs11](https://github.com/tpm2-software/tpm2-pkcs11) backend to store gpg keys into TPM.
-Documentation is still work in progress. Raw instructions below.
 
 WARNING: This is a relatively complex setup with lots of links in the chain, Complexity is the enemy of security. I cannot guarantee the absence of bugs or configuration mistakes that would void the security of the whole approach. Therefore, use at your own risk.
 
@@ -37,7 +36,7 @@ Create a transient key linked to the token. We create first a primary key in the
 tpm2_createprimary -c primary.ctx
 ```
 
-The key needs to be created as migrateable and a policy which protects its migration needs to be assocaited to the key. We want to
+The key needs to be created as migratable and a policy which protects its migration needs to be assocaited to the key. We want to
 use a signed policy, so we generate first the signing key which will authorize the migration.
 
 ```
