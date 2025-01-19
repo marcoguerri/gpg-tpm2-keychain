@@ -1,9 +1,11 @@
+# gpg-tpm2-keychain
+
 Docker environment for [pass](https://www.passwordstore.org/) password manager, backed
 by [gnupg-pkcs11-scd](https://github.com/alonbl/gnupg-pkcs11-scd) and [tpm2_pkcs11](https://github.com/tpm2-software/tpm2-pkcs11) backend to store gpg keys into TPM.
 
 WARNING: This is a relatively complex setup with lots of links in the chain, Complexity is the enemy of security. I cannot guarantee the absence of bugs or configuration mistakes that would void the security of the whole approach. Therefore, use at your own risk.
 
-# Auth model
+## Auth model
 
 A summary of the auth model, extracted from [tpm2-pkcs11 repo](https://github.com/tpm2-software/tpm2-pkcs11/blob/master/docs/ARCHITECTURE.md): all `tpm2_pkcs11` objects are stored under a peristent primary key in the owner hierarchy. `tpm2_pkcs11` library borrows several concepts that are smartcard specific. A `slot` is the physical smart card reader slot. For each slot, there could be one or more smartcards, each of which is associated with a token. A token maintains 2 objects under the primary key: one for the `SO` user, and the other for the `USER` user. The auth value for these objects is the `SO` or `USER` pin. The auth value is used to unseal an aes256 wrapping key, which in turn is used to encrypt all auth values for the objects in the token (keys and certificates that the token exposes for cryptographic operations). In this setup, the token is associated to a pre-existing transient TPM key stored outside of the TPM (in turn wrapped into a primary key in the owner hierarchy). This to allow for easy migration of this key to a different TPM (with associated policy) to give access to the same gpg-backed keychain on a different machine.
 
@@ -16,7 +18,7 @@ All persitent artifacts (e.g. keys, pass store, etc) are stored on `gpg_keys_vol
 If this volume gets lost (and there is no backup) access to all secrets is lost as well. Obviously, all TPM generated keys are bound
 to that single TPM, so losing access to TPM, means also losing access to the keys.
 
-# Store initialization
+## Store initialization
 
 The pkcs11 store needs to be initialized with a token.
 We'll initialize the store so the token will be associated to a transient external TPM object.
@@ -114,7 +116,7 @@ Later on it will be useful to list gpg keys with their full IDs:
 gpg --keyid-format LONG  --list-keys
 ```
 
-# Migrate key
+## Migrate key
 
 The procedure below explains how to migrate the gpg key generated above. We'll assume that TPM `A`
 is the origin TPM and TPM `B` is the destination TPM.
@@ -177,7 +179,7 @@ gpg --import key.gpg
 Now the gpg key should be usable also on TPM `B`.
 
 
-# Bugs
+## Bugs
 When decrypting a gpg message with the TPM backed key. gpg fails to extract the DEK from the corresponding frame, complaining that cipher algorithm is unknown in `get_it` in `pubkey-enc.c`. This happens because gpg-agent returns that random bytes padding at the begining of the frame has been removed (i.e. `padding = 0`), while this is not the case and DEK frame parsing picks up a random
 byte as the `A` field (cipher algorithm). Patch `files/0001_agent.patch` fixes this by hard setting padding to `-1`, which
 seems to be the value held by `padding` when using any other non-TPM backed key. As the time of writing, I haven't yet engaged

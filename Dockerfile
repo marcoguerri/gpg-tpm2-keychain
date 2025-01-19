@@ -4,9 +4,9 @@ MAINTAINER Marco Guerri
 
 RUN useradd -m gpg
 
-COPY --chown=gpg:gpg downgrade_glibc.sh /tmp
-
-RUN chmod a+x /tmp/downgrade_glibc.sh && /tmp/downgrade_glibc.sh
+RUN pacman-key --init
+RUN pacman-key --populate archlinux
+RUN pacman -Sy --noconfirm archlinux-keyring
 
 RUN echo "gpg ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
@@ -60,9 +60,6 @@ RUN chmod 600 $HOME/keys/gnupg
 RUN ln -s $HOME/keys/gnupg $HOME/.gnupg
 
 RUN mkdir $HOME/config
-
-# Requires second run, pacman upgrades glibc package
-RUN chmod a+x /tmp/downgrade_glibc.sh && /tmp/downgrade_glibc.sh
 
 RUN cd $HOME && \
         git clone https://aur.archlinux.org/gnupg-pkcs11-scd.git && \
